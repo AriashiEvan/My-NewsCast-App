@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="8dp"
+    app:cardBackgroundColor="@color/app_background"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:id="@+id/news_feed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/news_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="18dp"
+            android:text="Tesla Chinese Sales Were Good. Why the Stock Is Stalling"/>
+
+        <ImageView
+            android:id="@+id/new_thumb"
+            android:layout_marginTop="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="fitXY"
+            android:src="@mipmap/mynewscast_launcher"/>
+
+        <TextView
+            android:id="@+id/news_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textSize="18dp"
+            android:textStyle="normal"
+            android:text="Tesla Model Y demand in China is through the roof, and new delivery dates show the company has already sold out its allocation of the all-electric crossover for 2025.\nThe Model Y has been the most popular vehicle in the world in both of the last two years, ou…"
+            android:maxLines="2"
+            android:minLines="2"
+            android:ellipsize="end"
+            />
+
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
