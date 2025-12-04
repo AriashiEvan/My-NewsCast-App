@@ -8,16 +8,22 @@ import retrofit2.http.Query;
 
 public interface ApiService {
 
+    // Top headlines
     @GET("top-headlines")
     Call<NewsResponse> getTopHeadlines(
+            @Query("category") String category,
+            @Query("lang") String language,
             @Query("country") String country,
-            @Query("apiKey") String apiKey
+            @Query("max") int max,
+            @Query("apikey") String apiKey
     );
 
-    @GET("everything")
+    // Search
+    @GET("search")
     Call<NewsResponse> searchNews(
             @Query("q") String query,
-            @Query("language") String language,
-            @Query("apiKey") String apiKey
+            @Query("lang") String language,
+            @Query("max") int max,
+            @Query("apikey") String apiKey
     );
 }

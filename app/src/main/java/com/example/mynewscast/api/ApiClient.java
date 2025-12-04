@@ -5,8 +5,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
 
-    private static final String BASE_URL = "https://newsapi.org/v2/";
-    public static final String API_KEY = "f470bf9de0c9424590669149a65cb428"; // put your key here
+    private static final String BASE_URL = "https://gnews.io/api/v4/";
+
+    // PUT YOUR NEWSAPI KEY HERE
+    public static final String API_KEY = "033e039acbb709c2d9e4c6ac198e92fe";
 
     private static Retrofit retrofit = null;
 

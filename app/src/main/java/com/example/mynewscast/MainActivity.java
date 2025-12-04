@@ -79,76 +79,76 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                return false; // No live search
+                return false;
             }
         });
     }
 
-    // -------------------------------
-    // FETCH TOP HEADLINES (DEFAULT)
-    // -------------------------------
     private void loadTopHeadlines() {
-        ApiService service = ApiClient.getService();
+        ApiClient.getService().getTopHeadlines(
+                "general",      // category
+                "en",           // lang
+                "in",           // country
+                20,             // max articles
+                ApiClient.API_KEY
+        ).enqueue(new Callback<NewsResponse>() {
+            @Override
+            public void onResponse(Call<NewsResponse> call, Response<NewsResponse> response) {
+                if (response.body() != null) {
+                    newsList.clear();
 
-        service.getTopHeadlines("in", ApiClient.API_KEY)
-                .enqueue(new Callback<NewsResponse>() {
-                    @Override
-                    public void onResponse(Call<NewsResponse> call, Response<NewsResponse> response) {
-                        if (response.body() != null) {
-
-                            newsList.clear();
-
-                            for (NewsResponse.Article a : response.body().articles) {
-                                newsList.add(new NewsItem(
-                                        a.title,
-                                        a.description,
-                                        a.urlToImage,
-                                        a.url
-                                ));
-                            }
-
-                            newsAdapter.notifyDataSetChanged();
-                        }
+                    for (NewsResponse.Article a : response.body().articles) {
+                        newsList.add(new NewsItem(
+                                a.title,
+                                a.description,
+                                a.image,
+                                a.url
+                        ));
                     }
 
-                    @Override
-                    public void onFailure(Call<NewsResponse> call, Throwable t) {
-                        Toast.makeText(MainActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                        Log.e("NEWS_ERROR", t.getMessage());
-                    }
-                });
+                    newsAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<NewsResponse> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    // -------------------------------
-    // SEARCH NEWS
-    // -------------------------------
+
     private void loadSearchResults(String query) {
-        ApiService service = ApiClient.getService();
+        ApiClient.getService().searchNews(
+                query,        // q
+                "en",         // language
+                20,           // max
+                ApiClient.API_KEY
+        ).enqueue(new Callback<NewsResponse>() {
+            @Override
+            public void onResponse(Call<NewsResponse> call, Response<NewsResponse> response) {
+                if (response.body() != null) {
 
-        service.searchNews(query, "en", ApiClient.API_KEY)
-                .enqueue(new Callback<NewsResponse>() {
-                    @Override
-                    public void onResponse(Call<NewsResponse> call, Response<NewsResponse> response) {
-                        if (response.body() != null) {
-                            newsList.clear();
+                    newsList.clear();
 
-                            for (NewsResponse.Article a : response.body().articles) {
-                                newsList.add(new NewsItem(
-                                        a.title,
-                                        a.description,
-                                        a.urlToImage,
-                                        a.url
-                                ));
-                            }
-
-                            newsAdapter.notifyDataSetChanged();
-                        }
+                    for (NewsResponse.Article a : response.body().articles) {
+                        newsList.add(new NewsItem(
+                                a.title,
+                                a.description,
+                                a.image,
+                                a.url
+                        ));
                     }
 
-                    @Override
-                    public void onFailure(Call<NewsResponse> call, Throwable t) {
-                        Toast.makeText(MainActivity.this, "Search failed!", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    newsAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<NewsResponse> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Search failed", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
 }

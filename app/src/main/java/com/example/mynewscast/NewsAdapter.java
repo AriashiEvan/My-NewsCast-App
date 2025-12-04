@@ -42,16 +42,16 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
         holder.title.setText(item.getTitle());
         holder.description.setText(item.getDescription());
 
-        // Load image using Glide
         Glide.with(context)
                 .load(item.getImageUrl())
                 .placeholder(R.mipmap.mynewscast_launcher)
                 .into(holder.thumbnail);
 
-        // Open news article on click
         holder.itemView.setOnClickListener(v -> {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(item.getUrl()));
-            context.startActivity(browserIntent);
+            Intent intent = new Intent(context, WebViewActivity.class);
+            intent.putExtra("news_url", item.getUrl());
+            context.startActivity(intent);
+
         });
     }
 
