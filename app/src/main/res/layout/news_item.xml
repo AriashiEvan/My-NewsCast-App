@@ -21,6 +21,7 @@
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:textSize="18dp"
+            android:textColor="@color/app_text"
             android:text="Tesla Chinese Sales Were Good. Why the Stock Is Stalling"/>
 
         <ImageView
@@ -37,6 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:textSize="18dp"
+            android:textColor="@color/app_text"
             android:textStyle="normal"
             android:text="Tesla Model Y demand in China is through the roof, and new delivery dates show the company has already sold out its allocation of the all-electric crossover for 2025.\nThe Model Y has been the most popular vehicle in the world in both of the last two years, ou…"
             android:maxLines="2"

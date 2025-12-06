@@ -1,5 +1,6 @@
 package com.example.mynewscast;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -14,6 +15,7 @@ public class WebViewActivity extends AppCompatActivity {
     WebView webView;
     ProgressBar progressBar;
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,7 +34,6 @@ public class WebViewActivity extends AppCompatActivity {
 
         webView.setWebChromeClient(new WebChromeClient());
 
-        // Show progress bar while loading
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
@@ -43,9 +44,9 @@ public class WebViewActivity extends AppCompatActivity {
         webView.loadUrl(url);
     }
 
+    @SuppressLint("GestureBackNavigation")
     @Override
     public void onBackPressed() {
-        // If user can go back inside the WebView
         if (webView.canGoBack()) {
             webView.goBack();
         } else {

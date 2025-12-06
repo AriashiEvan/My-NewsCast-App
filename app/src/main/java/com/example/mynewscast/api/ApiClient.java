@@ -7,7 +7,7 @@ public class ApiClient {
 
     private static final String BASE_URL = "https://gnews.io/api/v4/";
 
-    // PUT YOUR NEWSAPI KEY HERE
+    // API Key from Gnews
     public static final String API_KEY = "033e039acbb709c2d9e4c6ac198e92fe";
 
     private static Retrofit retrofit = null;
