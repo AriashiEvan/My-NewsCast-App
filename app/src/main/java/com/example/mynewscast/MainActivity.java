@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.SearchView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -19,10 +18,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mynewscast.api.ApiClient;
-import com.example.mynewscast.api.ApiService;
 import com.example.mynewscast.model.NewsItem;
 import com.example.mynewscast.model.NewsResponse;
 
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupMenuPopup() {
-        menu_button.setOnClickListener(v -> showMenu(v));
+        menu_button.setOnClickListener(this::showMenu);
     }
 
     private void showMenu(View v) {
@@ -75,8 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.main_settings) {
-                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
                 return true;
             }
             return false;
@@ -95,15 +94,16 @@ public class MainActivity extends AppCompatActivity {
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                LinearLayoutManager layoutManager =
+                        (LinearLayoutManager) recyclerView.getLayoutManager();
 
                 int visibleItemCount = layoutManager.getChildCount();
                 int totalItemCount = layoutManager.getItemCount();
-                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+                int firstVisibleItemPos = layoutManager.findFirstVisibleItemPosition();
 
                 if (!isLoading && !isLastPage) {
-                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 10
-                            && firstVisibleItemPosition >= 0) {
+                    if ((visibleItemCount + firstVisibleItemPos) >= totalItemCount - 10
+                            && firstVisibleItemPos >= 0) {
 
                         currentPage++;
                         loadTopHeadlines(currentPage);
@@ -111,14 +111,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
     }
 
     private void setupInsets() {
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        boolean hideUi = prefs.getBoolean("hide_ui", false);
-
-        if (hideUi) return;
+        if (prefs.getBoolean("hide_ui", false)) return;
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -134,9 +131,8 @@ public class MainActivity extends AppCompatActivity {
                 loadSearchResults(query);
                 return true;
             }
-
             @Override
-            public boolean onQueryTextChange(String newText) {
+            public boolean onQueryTextChange(String text) {
                 return false;
             }
         });
@@ -162,9 +158,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showSystemBars() {
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        );
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
     }
 
     private void loadTopHeadlines(int page) {
@@ -174,75 +168,105 @@ public class MainActivity extends AppCompatActivity {
                 "general",
                 "en",
                 "in",
-                100,     // max articles per page
-                page,    // correct page number
+                10,
+                page,
                 ApiClient.API_KEY
         ).enqueue(new Callback<NewsResponse>() {
+
             @Override
-            public void onResponse(@NonNull Call<NewsResponse> call, Response<NewsResponse> response) {
+            public void onResponse(Call<NewsResponse> call, Response<NewsResponse> response) {
                 isLoading = false;
 
-                if (response.body() != null) {
-                    List<NewsResponse.Article> articles = response.body().articles;
-
-                    if (articles.isEmpty()) {
-                        isLastPage = true;
-                        return;
-                    }
-
-                    for (NewsResponse.Article a : articles) {
-                        newsList.add(new NewsItem(
-                                a.title,
-                                a.description,
-                                a.image,
-                                a.url
-                        ));
-                    }
-
-                    newsAdapter.notifyDataSetChanged();
+                if (!response.isSuccessful()) {
+                    openErrorPageFromCode(response.code());
+                    return;
                 }
+
+                if (response.body() == null) {
+                    openErrorPage("Invalid Response", "Server returned no data.");
+                    return;
+                }
+
+                List<NewsResponse.Article> articles = response.body().articles;
+                if (articles.isEmpty()) {
+                    isLastPage = true;
+                    return;
+                }
+
+                for (NewsResponse.Article a : articles) {
+                    newsList.add(new NewsItem(a.title, a.description, a.image, a.url));
+                }
+                newsAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onFailure(Call<NewsResponse> call, Throwable t) {
                 isLoading = false;
-                Toast.makeText(MainActivity.this, "Error loading more news", Toast.LENGTH_SHORT).show();
+                handleThrowable(t);
             }
         });
     }
-
-
     private void loadSearchResults(String query) {
         ApiClient.getService().searchNews(
-                query,
-                "en",
-                100,
-                1,
-                ApiClient.API_KEY
+                query, "en", 10, 1, ApiClient.API_KEY
         ).enqueue(new Callback<NewsResponse>() {
+
             @Override
             public void onResponse(Call<NewsResponse> call, Response<NewsResponse> response) {
-                if (response.body() != null) {
-                    newsList.clear();
 
-                    for (NewsResponse.Article a : response.body().articles) {
-                        newsList.add(new NewsItem(
-                                a.title,
-                                a.description,
-                                a.image,
-                                a.url
-                        ));
-                    }
-
-                    newsAdapter.notifyDataSetChanged();
+                if (!response.isSuccessful()) {
+                    openErrorPageFromCode(response.code());
+                    return;
                 }
+
+                if (response.body() == null) {
+                    openErrorPage("Invalid Response", "Server returned no data.");
+                    return;
+                }
+
+                newsList.clear();
+                for (NewsResponse.Article a : response.body().articles) {
+                    newsList.add(new NewsItem(a.title, a.description, a.image, a.url));
+                }
+
+                newsAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onFailure(Call<NewsResponse> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Search failed", Toast.LENGTH_SHORT).show();
+                handleThrowable(t);
             }
         });
+    }
+    private void handleThrowable(Throwable t) {
+        if (t instanceof UnknownHostException) {
+            openErrorPage("No Internet",
+                    "Please check your connection and try again.");
+        } else if (t instanceof SocketTimeoutException) {
+            openErrorPage("Timeout",
+                    "The server took too long to respond.");
+        } else {
+            openErrorPage("Unexpected Error", t.getMessage());
+        }
+    }
+
+    private void openErrorPageFromCode(int code) {
+        if (code == 404)
+            openErrorPage("Page Not Found", "Error 404 — Content unavailable.");
+        else if (code == 500)
+            openErrorPage("Server Error", "Error 500 — Server is down.");
+        else if (code == 400)
+            openErrorPage("Bad Request", "Error 400 — Something went wrong.");
+        else
+            openErrorPage("Error " + code, "Unexpected server error occurred.");
+    }
+
+    private void openErrorPage(String title, String message) {
+        Intent intent = new Intent(MainActivity.this, ErrorActivity.class);
+        intent.putExtra("error_title", title);
+        intent.putExtra("error_message", message);
+        intent.putExtra("retry_action", "retry_main");
+        startActivity(intent);
     }
 
     @Override

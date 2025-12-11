@@ -44,7 +44,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
 
         Glide.with(context)
                 .load(item.getImageUrl())
-                .placeholder(R.mipmap.mynewscast_launcher)
+                .placeholder(R.mipmap.loading_image)
                 .into(holder.thumbnail);
 
         holder.itemView.setOnClickListener(v -> {
